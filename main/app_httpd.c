@@ -164,6 +164,54 @@ static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_
     return len;
 }
 
+esp_err_t create_camera_image(camera_fb_t **fb_result)
+{
+    ESP_LOGD(TAG, "create_camera_image()");
+
+    esp_err_t res = ESP_OK;
+    camera_fb_t *fb = NULL;
+
+    int64_t fr_start = esp_timer_get_time();
+
+#ifdef CONFIG_LED_ILLUMINATOR_ENABLED
+    enable_led(true);
+    vTaskDelay(150 / portTICK_PERIOD_MS); // The LED needs to be turned on ~150ms before the call to esp_camera_fb_get()
+    fb = esp_camera_fb_get();             // or it won't be visible in the frame. A better way to do this is needed.
+    enable_led(false);
+#else
+    fb = esp_camera_fb_get();
+#endif
+
+    if (!fb)
+    {
+        ESP_LOGE(TAG, "Camera capture failed");
+        return ESP_FAIL;
+    }
+
+    size_t fb_len = 0;
+    if (fb->format != PIXFORMAT_JPEG)
+    {
+        ESP_LOGE(TAG, "Not a PIXFORMAT_JPEG format");
+        esp_camera_fb_return(fb);
+        return ESP_FAIL;
+    }
+
+    int64_t fr_end = esp_timer_get_time();
+    ESP_LOGI(TAG, "JPG: %uB %ums", (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start) / 1000));
+
+    *fb_result = fb;
+    return res;
+}
+
+esp_err_t free_camera_image(camera_fb_t *fb)
+{
+    ESP_LOGD(TAG, "free_camera_image()");
+
+    esp_camera_fb_return(fb);
+
+    return ESP_OK;
+}
+
 static esp_err_t capture_handler(httpd_req_t *req)
 {
     camera_fb_t *fb = NULL;

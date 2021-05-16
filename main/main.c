@@ -57,4 +57,5 @@ void app_main()
     app_camera_main();
     app_httpd_main();
     app_mdns_main();
+    app_http1_post_jpeg();
 }

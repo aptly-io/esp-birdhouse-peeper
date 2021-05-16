@@ -177,4 +177,18 @@
 #define PCLK_GPIO_NUM     CONFIG_CAMERA_PIN_PCLK
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+esp_err_t create_camera_image(camera_fb_t **);
+esp_err_t free_camera_image(camera_fb_t *);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
 #endif
