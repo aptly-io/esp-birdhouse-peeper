@@ -1,0 +1,80 @@
+@startuml
+
+title "Major states of the Birdhouse Peeper IoT"
+
+note top of Operating
+  List up the GPIO pins
+  used in each state
+  Think about jtag/uart/PSRAM/external Flash
+end note
+
+[*] --> Provisioning
+
+note right of Provisioning: BLE based, WiFi activate
+
+state Operating {
+
+  state Idling
+  state AudioVideoMonitoring
+  state SensorUploading
+  state SensorsActive
+
+  note left of Idling: light/deep sleep mode
+  note bottom of AudioVideoMonitoring: WiFi, camera, microphone active
+  note bottom of SensorUploading
+    Sensor data used for ML training cloud service
+    - WiFi active:
+      mobile as a gateway to a cloud service
+    - Mobile data active:
+      directly upload into cloud service
+    (Newer models are part of a FotA?)
+  end note
+  note bottom of SensorsActive
+    I2C sensors active:
+      - Light sensor (measures luminosity),
+      - Accelerator sensor (measures acceleration in X, Y, Z)
+        Some sensor interrupt movement, tilt, lifting etc
+      - Environmental sensor (temperature, humidity, pressure)
+      - Battery sensor
+    microphone, camera periodically
+      - Sound (as PCM samples)
+      - Picture (memory optimal)
+    Currently all sensor are planned inside the smallish birdhouse
+  end note
+
+
+  state SensorsActive {
+    state MemoryRecording
+    state MemoryBackup
+
+    note bottom of MemoryBackup: SDcard GPIO active
+
+    MemoryRecording --> MemoryBackup: MemoryFull
+    MemoryBackup --> MemoryRecording: BackupFinished
+
+    --
+
+    state SensorMonitoring
+
+    note right of SensorMonitoring
+      Event/alert inferencing from
+      sensor data and timing
+    end note
+  }
+
+  Idling --> AudioVideoMonitoring: BleAVRequest
+  AudioVideoMonitoring --> Idling: Disconnect
+
+  Idling --> SensorUploading: BleUploadRequest
+  SensorUploading --> Idling: UploadFinished
+
+  Idling --> SensorsActive
+  SensorsActive --> Idling
+
+}
+
+Provisioning --> Idling
+
+Operating --> Provisioning: FactoryReset
+
+@enduml
