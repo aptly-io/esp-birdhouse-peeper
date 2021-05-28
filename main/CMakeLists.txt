@@ -1,9 +1,12 @@
 set(COMPONENT_SRCS
-    "main.c" "app_wifi.c"
+    "main.c"
     "app_camera.c"
     "app_httpd.c"
     "app_mdns.c"
-    "app_http_post_jpeg.c")
+    "app_http_post_jpeg.c"
+
+    "app_prov.c"
+    "app_prov_handlers.c")
 
 set(COMPONENT_ADD_INCLUDEDIRS "include")
 
@@ -12,7 +15,8 @@ set(COMPONENT_REQUIRES
     nvs_flash
     esp_http_server
     mdns
-    )
+    wifi_provisioning
+    bt)
 
 set(COMPONENT_EMBED_FILES
         "www/index_ov2640.html.gz"
